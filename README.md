@@ -14,7 +14,8 @@ Le jeu de Nim est un jeu de stratégie à deux joueurs. Au début de la partie, 
 
 ```
 game/
-├── main.py         ← programme principal (menus + logique du jeu + dashboard)
+├── main.py         ← programme principal en console (menus + jeu + dashboard)
+├── gui.py          ← interface graphique Pygame (menus + jeu visuel)
 ├── database.py     ← connexion MySQL et toutes les fonctions SQL
 ├── player.py       ← gestion des joueurs (créer, afficher, stats)
 ├── enemy.py        ← intelligence artificielle (4 niveaux)
@@ -34,7 +35,7 @@ game/
 
 ### 2. Installer les dépendances
 ```bash
-uv add pymysql matplotlib
+uv add pymysql matplotlib pygame
 ```
 
 ### 3. Créer la base de données
@@ -50,6 +51,11 @@ exit
 ### 4. Lancer le projet
 ```bash
 cd "c:\Users\msi\Desktop\Esisa\2eme Annee Esisa\Unix\Python\Projet\game"
+
+# Pour jouer avec l'interface graphique (Pygame)
+uv run gui.py
+
+# Pour jouer en mode texte (Console)
 uv run main.py
 ```
 Les tables sont créées automatiquement au premier lancement.
@@ -117,6 +123,7 @@ Les tables sont créées automatiquement au premier lancement.
 |---|---|---|
 | `pymysql` | 1.2.0 | connexion et requêtes MySQL |
 | `matplotlib` | 3.11.0 | graphiques du dashboard |
+| `pygame` | 2.6.1 | interface graphique du jeu |
 
 ---
 
