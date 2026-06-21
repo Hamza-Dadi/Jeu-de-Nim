@@ -1,5 +1,5 @@
 # 🎮 Jeu de Nim — avec Intelligence Artificielle
-### Projet Python — ESISA 2026 | Hamza Dadi-Senhaji Mohammed
+### Projet Python — ESISA 2026 | Hamza Dadi et Mohammed Senhaji
 
 ---
 
@@ -159,7 +159,7 @@ Menu Principal
 
 ## 👨‍🎓 Informations
 
-- **Auteur** : Hamza Dadi
+- **Auteur** : Hamza Dadi/Mohammed Senhaji
 - **Établissement** : ESISA
 - **Année** : 2026
 - **Matière** : Unix / Python
