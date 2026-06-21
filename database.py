@@ -149,6 +149,28 @@ def get_score_evolution(name):
             connection.rollback()
     return results
 
+def get_full_history(name):
+    with connection.cursor() as cursor:
+        try:
+            cursor.execute(
+                'SELECT winner, player1, player2, piles, duration, date_game FROM t_game WHERE player1=%s OR player2=%s ORDER BY date_game DESC LIMIT 10',
+                (name, name)
+            )
+            results = cursor.fetchall()
+        except pymysql.Error as e:
+            print(e)
+            connection.rollback()
+    return results
+
+def delete_player(name):
+    with connection.cursor() as cursor:
+        try:
+            cursor.execute('DELETE FROM t_player WHERE name=%s', (name,))
+            connection.commit()
+        except pymysql.Error as e:
+            print(e)
+            connection.rollback()
+
 if __name__ == '__main__':
     create_tables()
     print('tables creees')
