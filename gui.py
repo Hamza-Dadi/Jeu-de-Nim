@@ -2,6 +2,8 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 import time
+import winsound
+import os
 
 from settings import DEFAULT_PILES, LEVEL_NAMES, MODE_JCJ, MODE_JCIA
 from database import create_tables, save_game, get_ranking, get_all_players, insert_player, get_stats, get_full_history, delete_player
@@ -508,6 +510,9 @@ def canvas_clicked(event):
             if piles[i] > 0:
                 selected_pile = i
                 selected_count = 1
+                try:
+                    winsound.PlaySound(os.path.join('assets', 'sounds', 'pop.wav'), winsound.SND_ASYNC)
+                except: pass
                 update_game_ui()
 
 def update_count(delta):
@@ -516,6 +521,9 @@ def update_count(delta):
         nc = selected_count + delta
         if 1 <= nc <= piles[selected_pile]:
             selected_count = nc
+            try:
+                winsound.PlaySound(os.path.join('assets', 'sounds', 'pop.wav'), winsound.SND_ASYNC)
+            except: pass
             update_game_ui()
 
 def play_human():
@@ -546,6 +554,10 @@ def play_ai():
     pile_index, count = get_ai_move(piles, level)
     apply_move(pile_index, count)
     
+    try:
+        winsound.PlaySound(os.path.join('assets', 'sounds', 'pop.wav'), winsound.SND_ASYNC)
+    except: pass
+    
     messagebox.showinfo("Tour de l'IA", f"L'IA a retiré {count} objet(s) de la pile {pile_index+1}")
     
     if is_game_over():
@@ -558,6 +570,9 @@ def play_ai():
 def end_game():
     duration = int(time.time() - start_time)
     save_game(player1, player2, winner, mode, level, duration, DEFAULT_PILES)
+    try:
+        winsound.PlaySound(os.path.join('assets', 'sounds', 'win.wav'), winsound.SND_ASYNC)
+    except: pass
     clear_content()
     
     ctk.CTkLabel(content_frame, text="Partie Terminée", text_color=TEXT_MUTED, font=ctk.CTkFont(family=FONT_MAIN, size=24)).pack(pady=(100, 10))
@@ -575,6 +590,9 @@ def main():
     root = ctk.CTk()
     root.title("NimGame - Pro Edition")
     root.geometry("1100x750")
+    try:
+        root.iconbitmap(os.path.join('assets', 'images', 'icon.ico'))
+    except: pass
     
     # Sidebar
     sidebar = ctk.CTkFrame(root, fg_color=BG_NAVBAR, width=250, corner_radius=0)

@@ -1,0 +1,1 @@
+Ce dossier est destiné à contenir les effets sonores du jeu (par exemple : son de victoire, son de clic sur les boutons, etc.).

@@ -20,6 +20,9 @@ game/
 ├── player.py       ← gestion des joueurs (créer, afficher, stats)
 ├── enemy.py        ← intelligence artificielle (4 niveaux)
 ├── settings.py     ← configuration (piles, niveaux, paramètres DB)
+├── assets/         ← ressources graphiques et sonores
+│   ├── images/     ← images du jeu
+│   └── sounds/     ← effets sonores
 ├── pyproject.toml  ← configuration du projet uv
 └── .venv/          ← environnement virtuel
 ```
@@ -82,6 +85,11 @@ Les tables sont créées automatiquement au premier lancement.
 - Créer un profil joueur
 - Consulter les statistiques (victoires, défaites, score, taux)
 - Consulter l'historique des parties
+
+### Interface et Multimédia
+- Interface graphique moderne (CustomTkinter) avec thème sombre
+- Icône d'application personnalisée
+- Effets sonores interactifs intégrés via `winsound` (clics, tour de l'IA, victoire)
 
 ### Dashboard statistiques
 - Classement des joueurs (graphe en barres)
