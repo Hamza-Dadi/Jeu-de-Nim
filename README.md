@@ -89,6 +89,7 @@ Les tables sont créées automatiquement au premier lancement.
 ### Interface et Multimédia
 - Interface graphique moderne (CustomTkinter) avec thème sombre
 - Icône d'application personnalisée (`assets/images/icon.ico`)
+- Avatars dynamiques pour les joueurs et l'IA (`assets/images/avatar1.png`, etc.)
 - Effets sonores interactifs intégrés via `winsound` (clics, tour de l'IA, victoire)
 
 ### Tableaux de bord statistiques

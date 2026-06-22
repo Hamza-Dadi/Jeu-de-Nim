@@ -90,7 +90,7 @@ def enregistrer_partie(joueur1, joueur2, gagnant, mode, niveau, duree, piles):
             print(e)
             connexion.rollback()
 
-def get_stats(nom):
+def obtenir_statistiques(nom):
     resultat = None
     with connexion.cursor() as curseur:
         try:

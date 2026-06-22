@@ -1,4 +1,4 @@
-from database import ajouter_joueur, chercher_joueur, lister_joueurs, get_stats, evolution_score
+from database import ajouter_joueur, chercher_joueur, lister_joueurs, obtenir_statistiques, evolution_score
 
 def creer_joueur(nom):
     existant = chercher_joueur(nom)
@@ -29,7 +29,7 @@ def afficher_historique(nom):
             print(f'{date} -- defaite   --> score: {score}')
 
 def afficher_stats(nom):
-    resultats = get_stats(nom)
+    resultats = obtenir_statistiques(nom)
     if not resultats:
         print(f'joueur {nom} introuvable')
         return
