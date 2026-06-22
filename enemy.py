@@ -1,88 +1,104 @@
 import random
-from settings import LEVEL_NAMES
+from settings import NOMS_NIVEAUX
 
-def ai_random(piles):
-    non_empty = [i for i in range(len(piles)) if piles[i] > 0]
-    pile  = random.choice(non_empty)
-    count = random.randint(1, piles[pile])
-    return pile, count
+# ============================================================
+# NIVEAU 1 : aleatoire
+# ============================================================
+def ia_aleatoire(piles):
+    piles_non_vides = [i for i in range(len(piles)) if piles[i] > 0]
+    index_pile = random.choice(piles_non_vides)
+    nb_objets  = random.randint(1, piles[index_pile])
+    return index_pile, nb_objets
 
-def ai_intermediate(piles):
-    max_pile  = 0
-    max_index = 0
+# ============================================================
+# NIVEAU 2 : intermediaire (cible la pile la plus grande)
+# ============================================================
+def ia_intermediaire(piles):
+    pile_max  = 0
+    index_max = 0
     for i in range(len(piles)):
-        if piles[i] > max_pile:
-            max_pile  = piles[i]
-            max_index = i
-    count = random.randint(1, max(1, max_pile // 2))
-    return max_index, count
+        if piles[i] > pile_max:
+            pile_max  = piles[i]
+            index_max = i
+    nb_objets = random.randint(1, max(1, pile_max // 2))
+    return index_max, nb_objets
 
-def ai_minimax(piles):
-    best_pile  = -1
-    best_count = -1
-    best_score = -1
+# ============================================================
+# NIVEAU 3 : avance (algorithme Minimax recursif)
+# ============================================================
+def ia_minimax(piles):
+    meilleure_pile   = -1
+    meilleur_nb      = -1
+    meilleur_score   = -1
     for i in range(len(piles)):
-        for count in range(1, piles[i]+1):
-            new_piles = list(piles)
-            new_piles[i] = new_piles[i] - count
-            score = minimax(new_piles, False)
-            if score > best_score:
-                best_score = score
-                best_pile  = i
-                best_count = count
-    return best_pile, best_count
+        for nb in range(1, piles[i] + 1):
+            nouvelles_piles = list(piles)
+            nouvelles_piles[i] = nouvelles_piles[i] - nb
+            score = minimax(nouvelles_piles, False)
+            if score > meilleur_score:
+                meilleur_score = score
+                meilleure_pile = i
+                meilleur_nb    = nb
+    return meilleure_pile, meilleur_nb
 
-def minimax(piles, is_maximizing):
+def minimax(piles, est_maximisant):
+    # cas de base : toutes les piles sont vides
     if sum(piles) == 0:
-        if is_maximizing:
+        if est_maximisant:
             return -1
         else:
             return 1
-    if is_maximizing:
-        best = -1
+    if est_maximisant:
+        meilleur = -1
         for i in range(len(piles)):
-            for count in range(1, piles[i]+1):
-                new_piles = list(piles)
-                new_piles[i] = new_piles[i] - count
-                score = minimax(new_piles, False)
-                if score > best:
-                    best = score
-        return best
+            for nb in range(1, piles[i] + 1):
+                nouvelles_piles = list(piles)
+                nouvelles_piles[i] = nouvelles_piles[i] - nb
+                score = minimax(nouvelles_piles, False)
+                if score > meilleur:
+                    meilleur = score
+        return meilleur
     else:
-        best = 1
+        meilleur = 1
         for i in range(len(piles)):
-            for count in range(1, piles[i]+1):
-                new_piles = list(piles)
-                new_piles[i] = new_piles[i] - count
-                score = minimax(new_piles, True)
-                if score < best:
-                    best = score
-        return best
+            for nb in range(1, piles[i] + 1):
+                nouvelles_piles = list(piles)
+                nouvelles_piles[i] = nouvelles_piles[i] - nb
+                score = minimax(nouvelles_piles, True)
+                if score < meilleur:
+                    meilleur = score
+        return meilleur
 
-def ai_nimsum(piles):
-    nim_sum = 0
-    for p in piles:
-        nim_sum = nim_sum ^ p
-    if nim_sum == 0:
-        return ai_random(piles)
+# ============================================================
+# NIVEAU 4 : expert (strategie Nim-Sum avec XOR)
+# ============================================================
+def ia_nimsum(piles):
+    nim_somme = 0
+    for pile in piles:
+        nim_somme = nim_somme ^ pile    # operateur XOR bit a bit
+    if nim_somme == 0:
+        return ia_aleatoire(piles)      # position perdante, joue au hasard
     for i in range(len(piles)):
-        target = piles[i] ^ nim_sum
-        if target < piles[i]:
-            return i, piles[i] - target
-    return ai_random(piles)
+        cible = piles[i] ^ nim_somme
+        if cible < piles[i]:
+            return i, piles[i] - cible
+    return ia_aleatoire(piles)
 
-def get_ai_move(piles, level):
-    if level == 1:
-        return ai_random(piles)
-    elif level == 2:
-        return ai_intermediate(piles)
-    elif level == 3:
-        return ai_minimax(piles)
+# ============================================================
+# DISPATCHER : choisit la bonne fonction selon le niveau
+# ============================================================
+def jouer_ia(piles, niveau):
+    if niveau == 1:
+        return ia_aleatoire(piles)
+    elif niveau == 2:
+        return ia_intermediaire(piles)
+    elif niveau == 3:
+        return ia_minimax(piles)
     else:
-        return ai_nimsum(piles)
+        return ia_nimsum(piles)
 
 if __name__ == '__main__':
     piles = [3, 5, 7]
-    print(f'random      : {ai_random(piles)}')
-    print(f'intermediate: {ai_intermediate(piles)}')
-    print(f'nimsum      : {ai_nimsum(piles)}')
+    print(f'aleatoire    : {ia_aleatoire(piles)}')
+    print(f'intermediaire: {ia_intermediaire(piles)}')
+    print(f'nimsum       : {ia_nimsum(piles)}')

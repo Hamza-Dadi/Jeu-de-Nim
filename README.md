@@ -14,15 +14,15 @@ Le jeu de Nim est un jeu de stratégie à deux joueurs. Au début de la partie, 
 
 ```
 game/
-├── main.py         ← programme principal en console (menus + jeu + dashboard)
+├── main.py         ← programme principal en console (menus + jeu + tableaux de bord)
 ├── gui.py          ← interface graphique CustomTkinter (menus + jeu visuel)
 ├── database.py     ← connexion MySQL et toutes les fonctions SQL
 ├── player.py       ← gestion des joueurs (créer, afficher, stats)
 ├── enemy.py        ← intelligence artificielle (4 niveaux)
-├── settings.py     ← configuration (piles, niveaux, paramètres DB)
+├── settings.py     ← configuration (piles, niveaux, paramètres BD)
 ├── assets/         ← ressources graphiques et sonores
-│   ├── images/     ← images du jeu
-│   └── sounds/     ← effets sonores
+│   ├── images/     ← images du jeu (icône .ico)
+│   └── sounds/     ← effets sonores (.wav)
 ├── pyproject.toml  ← configuration du projet uv
 └── .venv/          ← environnement virtuel
 ```
@@ -78,7 +78,7 @@ Les tables sont créées automatiquement au premier lancement.
 |---|---|---|
 | 1 | Débutant | Coups aléatoires |
 | 2 | Intermédiaire | Cible la plus grande pile |
-| 3 | Avancé | Algorithme Minimax |
+| 3 | Avancé | Algorithme Minimax récursif |
 | 4 | Expert | Stratégie Nim-Sum (XOR) |
 
 ### Gestion des joueurs
@@ -88,10 +88,10 @@ Les tables sont créées automatiquement au premier lancement.
 
 ### Interface et Multimédia
 - Interface graphique moderne (CustomTkinter) avec thème sombre
-- Icône d'application personnalisée
+- Icône d'application personnalisée (`assets/images/icon.ico`)
 - Effets sonores interactifs intégrés via `winsound` (clics, tour de l'IA, victoire)
 
-### Dashboard statistiques
+### Tableaux de bord statistiques
 - Classement des joueurs (graphe en barres)
 - Parties par niveau de difficulté (graphe en barres)
 - Evolution du score d'un joueur (courbe)
@@ -101,27 +101,27 @@ Les tables sont créées automatiquement au premier lancement.
 
 ## 🗄️ Base de données
 
-### Table `t_player`
+### Table `t_joueur`
 | Colonne | Type | Description |
 |---|---|---|
 | id | INT AUTO_INCREMENT | identifiant unique |
-| name | VARCHAR(50) | nom du joueur |
-| wins | INT | victoires |
-| losses | INT | défaites |
+| nom | VARCHAR(50) | nom du joueur |
+| victoires | INT | nombre de victoires |
+| defaites | INT | nombre de défaites |
 | score | INT | score cumulé (+10 par victoire) |
 
-### Table `t_game`
+### Table `t_partie`
 | Colonne | Type | Description |
 |---|---|---|
 | id | INT AUTO_INCREMENT | identifiant unique |
-| player1 | VARCHAR(50) | joueur 1 |
-| player2 | VARCHAR(50) | joueur 2 (ou 'IA') |
-| winner | VARCHAR(50) | gagnant |
+| joueur1 | VARCHAR(50) | joueur 1 |
+| joueur2 | VARCHAR(50) | joueur 2 (ou 'IA') |
+| gagnant | VARCHAR(50) | gagnant de la partie |
 | mode | VARCHAR(10) | JcJ ou JcIA |
-| difficulty | INT | niveau IA (0 si JcJ) |
-| duration | INT | durée en secondes |
+| niveau | INT | niveau IA (0 si JcJ) |
+| duree | INT | durée en secondes |
 | piles | VARCHAR(50) | configuration des piles |
-| date_game | DATETIME | date et heure de la partie |
+| date_partie | DATETIME | date et heure de la partie |
 
 ---
 
@@ -130,21 +130,21 @@ Les tables sont créées automatiquement au premier lancement.
 | Package | Version | Utilité |
 |---|---|---|
 | `pymysql` | 1.2.0 | connexion et requêtes MySQL |
-| `matplotlib` | 3.11.0 | graphiques du dashboard |
+| `matplotlib` | 3.11.0 | graphiques des tableaux de bord |
 | `customtkinter` | 5.2.2 | interface graphique moderne du jeu |
 
 ---
 
 ## 🧠 Algorithmes implémentés
 
-- **Random** : `random.choice()` + `random.randint()` (niveau 1)
-- **Greedy** : ciblage de la plus grande pile (niveau 2)
-- **Minimax** : exploration récursive de tous les états (niveau 3)
-- **Nim-Sum** : stratégie mathématique XOR optimale (niveau 4)
+- **`ia_aleatoire`** : `random.choice()` + `random.randint()` (niveau 1)
+- **`ia_intermediaire`** : ciblage de la plus grande pile (niveau 2)
+- **`ia_minimax`** + **`minimax`** : exploration récursive de tous les états (niveau 3)
+- **`ia_nimsum`** : stratégie mathématique XOR optimale (niveau 4)
 
 ---
 
-## ▶️ Utilisation
+## ▶️ Utilisation (mode console)
 
 ```
 Menu Principal
@@ -156,7 +156,7 @@ Menu Principal
 │   ├── 2 - Afficher tous les joueurs
 │   ├── 3 - Statistiques d'un joueur
 │   └── 4 - Historique d'un joueur
-└── 3 - Dashboard statistiques
+└── 3 - Tableaux de bord
     ├── 1 - Classement des joueurs
     ├── 2 - Parties par niveau
     ├── 3 - Evolution du score
@@ -167,7 +167,7 @@ Menu Principal
 
 ## 👨‍🎓 Informations
 
-- **Auteur** : Hamza Dadi/Mohammed Senhaji
+- **Auteurs** : Hamza Dadi / Mohammed Senhaji
 - **Établissement** : ESISA
 - **Année** : 2026
 - **Matière** : Unix / Python

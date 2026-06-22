@@ -1,15 +1,15 @@
 import os
 import time
 from matplotlib import pyplot as plt
-from settings import DEFAULT_PILES, MODE_JCJ, MODE_JCIA, LEVEL_NAMES
-from database import create_tables, save_game, get_ranking, get_avg_duration, get_games_by_difficulty, get_score_evolution
-from player import create_player, select_player, display_stats, display_history, display_all_players
-from enemy import get_ai_move
+from settings import PILES_DEFAUT, MODE_JCJ, MODE_JCIA, NOMS_NIVEAUX
+from database import creer_tables, enregistrer_partie, classement_joueurs, duree_moyenne_parties, parties_par_niveau, evolution_score
+from player import creer_joueur, selectionner_joueur, afficher_stats, afficher_historique, afficher_tous_joueurs
+from enemy import jouer_ia
 
 # ============================================================
 # AFFICHAGE DES PILES
 # ============================================================
-def display_piles(piles):
+def afficher_piles(piles):
     print('\n' + '*'*30)
     for i in range(len(piles)):
         print(f'  pile {i+1}: ' + '|' * piles[i] + f'  ({piles[i]})')
@@ -18,30 +18,30 @@ def display_piles(piles):
 # ============================================================
 # VALIDATION D UN COUP
 # ============================================================
-def is_valid(piles, pile_index, count):
-    if pile_index < 0 or pile_index >= len(piles):
+def coup_valide(piles, index_pile, nb_objets):
+    if index_pile < 0 or index_pile >= len(piles):
         return False
-    if count < 1 or count > piles[pile_index]:
+    if nb_objets < 1 or nb_objets > piles[index_pile]:
         return False
     return True
 
 # ============================================================
 # DETECTION FIN DE PARTIE
 # ============================================================
-def is_game_over(piles):
+def partie_terminee(piles):
     return sum(piles) == 0
 
 # ============================================================
 # COUP D UN JOUEUR HUMAIN
 # ============================================================
-def human_turn(piles, player_name):
-    print(f'tour de {player_name}')
+def tour_joueur(piles, nom_joueur):
+    print(f'tour de {nom_joueur}')
     while True:
         try:
-            pile_index = int(input('choisir une pile (1,2,3...): ')) - 1
-            count      = int(input('combien d objets retirer ? : '))
-            if is_valid(piles, pile_index, count):
-                piles[pile_index] = piles[pile_index] - count
+            index_pile = int(input('choisir une pile (1,2,3...): ')) - 1
+            nb_objets  = int(input('combien d objets retirer ? : '))
+            if coup_valide(piles, index_pile, nb_objets):
+                piles[index_pile] = piles[index_pile] - nb_objets
                 return piles
             else:
                 print('coup invalide, reessayer')
@@ -51,103 +51,103 @@ def human_turn(piles, player_name):
 # ============================================================
 # COUP DE L IA
 # ============================================================
-def ai_turn(piles, level):
-    pile_index, count = get_ai_move(piles, level)
-    print(f'IA ({LEVEL_NAMES[level]}) retire {count} objet(s) de la pile {pile_index+1}')
-    piles[pile_index] = piles[pile_index] - count
+def tour_ia(piles, niveau):
+    index_pile, nb_objets = jouer_ia(piles, niveau)
+    print(f'IA ({NOMS_NIVEAUX[niveau]}) retire {nb_objets} objet(s) de la pile {index_pile+1}')
+    piles[index_pile] = piles[index_pile] - nb_objets
     return piles
 
 # ============================================================
 # PARTIE JcJ
 # ============================================================
-def play_jcj(player1, player2, piles):
-    start  = time.time()
-    turn   = 0
-    players = [player1, player2]
-    while not is_game_over(piles):
-        display_piles(piles)
-        current = players[turn % 2]
-        piles   = human_turn(piles, current)
-        if is_game_over(piles):
-            winner = current
+def jouer_jcj(joueur1, joueur2, piles):
+    debut  = time.time()
+    tour   = 0
+    joueurs = [joueur1, joueur2]
+    while not partie_terminee(piles):
+        afficher_piles(piles)
+        joueur_actuel = joueurs[tour % 2]
+        piles = tour_joueur(piles, joueur_actuel)
+        if partie_terminee(piles):
+            gagnant = joueur_actuel
             break
-        turn = turn + 1
-    duration = int(time.time() - start)
-    display_piles(piles)
-    print(f'\n*** {winner} a gagne ! ***\n')
-    save_game(player1, player2, winner, MODE_JCJ, 0, duration, DEFAULT_PILES)
+        tour = tour + 1
+    duree = int(time.time() - debut)
+    afficher_piles(piles)
+    print(f'\n*** {gagnant} a gagne ! ***\n')
+    enregistrer_partie(joueur1, joueur2, gagnant, MODE_JCJ, 0, duree, PILES_DEFAUT)
 
 # ============================================================
 # PARTIE JcIA
 # ============================================================
-def play_jcia(player1, level, piles):
-    start  = time.time()
-    turn   = 0
-    while not is_game_over(piles):
-        display_piles(piles)
-        if turn % 2 == 0:
-            piles = human_turn(piles, player1)
-            if is_game_over(piles):
-                winner = player1
+def jouer_jcia(joueur1, niveau, piles):
+    debut  = time.time()
+    tour   = 0
+    while not partie_terminee(piles):
+        afficher_piles(piles)
+        if tour % 2 == 0:
+            piles = tour_joueur(piles, joueur1)
+            if partie_terminee(piles):
+                gagnant = joueur1
                 break
         else:
-            piles = ai_turn(piles, level)
-            if is_game_over(piles):
-                winner = 'IA'
+            piles = tour_ia(piles, niveau)
+            if partie_terminee(piles):
+                gagnant = 'IA'
                 break
-        turn = turn + 1
-    duration = int(time.time() - start)
-    display_piles(piles)
-    print(f'\n*** {winner} a gagne ! ***\n')
-    save_game(player1, 'IA', winner, MODE_JCIA, level, duration, DEFAULT_PILES)
+        tour = tour + 1
+    duree = int(time.time() - debut)
+    afficher_piles(piles)
+    print(f'\n*** {gagnant} a gagne ! ***\n')
+    enregistrer_partie(joueur1, 'IA', gagnant, MODE_JCIA, niveau, duree, PILES_DEFAUT)
 
 # ============================================================
-# DASHBOARD STATISTIQUES
+# DASHBOARD GRAPHIQUES
 # ============================================================
-def plot_ranking():
-    results = get_ranking()
+def graphe_classement():
+    resultats = classement_joueurs()
     x = []
     y = []
-    for name, wins, score in results:
-        x.append(name)
+    for nom, victoires, score in resultats:
+        x.append(nom)
         y.append(score)
     plt.bar(x, y, width=0.4, color='green')
     plt.title('Classement des joueurs')
     plt.legend(['score'])
     plt.show()
 
-def plot_difficulty():
-    results = get_games_by_difficulty()
+def graphe_niveaux():
+    resultats = parties_par_niveau()
     x = []
     y = []
-    for diff, count in results:
-        x.append(LEVEL_NAMES.get(diff, str(diff)))
-        y.append(count)
+    for niveau, nb in resultats:
+        x.append(NOMS_NIVEAUX.get(niveau, str(niveau)))
+        y.append(nb)
     plt.bar(x, y, width=0.4, color='blue')
     plt.title('Parties par niveau de difficulte')
     plt.legend(['nb parties'])
     plt.show()
 
-def plot_score_evolution(name):
-    results = get_score_evolution(name)
+def graphe_evolution_score(nom):
+    resultats = evolution_score(nom)
     x = []
     y = []
     score = 0
-    for i in range(len(results)):
-        date, winner = results[i]
-        if winner == name:
+    for i in range(len(resultats)):
+        date, gagnant = resultats[i]
+        if gagnant == nom:
             score = score + 10
-        x.append(i+1)
+        x.append(i + 1)
         y.append(score)
     plt.plot(x, y, 'go-', label='score')
-    plt.title('Evolution du score de ' + name)
+    plt.title('Evolution du score de ' + nom)
     plt.legend()
     plt.show()
 
 # ============================================================
 # MENUS
 # ============================================================
-def menu_players():
+def menu_joueurs():
     while True:
         os.system('cls')
         print('*'*10, 'Gestion Joueurs', '*'*10)
@@ -160,24 +160,24 @@ def menu_players():
         choix = input('choix [1-4] ou autre pour retour: ')
         match choix:
             case '1':
-                name = input('nom du joueur: ')
-                create_player(name)
+                nom = input('nom du joueur: ')
+                creer_joueur(nom)
             case '2':
-                display_all_players()
+                afficher_tous_joueurs()
             case '3':
-                name = input('nom du joueur: ')
-                display_stats(name)
+                nom = input('nom du joueur: ')
+                afficher_stats(nom)
             case '4':
-                name = input('nom du joueur: ')
-                display_history(name)
+                nom = input('nom du joueur: ')
+                afficher_historique(nom)
             case _:
                 break
         input('\nappuyer sur entree...')
 
-def menu_dashboard():
+def menu_tableaux():
     while True:
         os.system('cls')
-        print('*'*10, 'Dashboard', '*'*10)
+        print('*'*10, 'Tableaux de bord', '*'*10)
         print('''
           1- Classement des joueurs
           2- Parties par niveau de difficulte
@@ -187,19 +187,19 @@ def menu_dashboard():
         choix = input('choix [1-4] ou autre pour retour: ')
         match choix:
             case '1':
-                plot_ranking()
+                graphe_classement()
             case '2':
-                plot_difficulty()
+                graphe_niveaux()
             case '3':
-                name = input('nom du joueur: ')
-                plot_score_evolution(name)
+                nom = input('nom du joueur: ')
+                graphe_evolution_score(nom)
             case '4':
-                print(f'temps moyen: {get_avg_duration()} secondes')
+                print(f'temps moyen: {duree_moyenne_parties()} secondes')
             case _:
                 break
         input('\nappuyer sur entree...')
 
-def menu_game():
+def menu_partie():
     while True:
         os.system('cls')
         print('*'*10, 'Nouvelle Partie', '*'*10)
@@ -210,23 +210,23 @@ def menu_game():
         choix = input('choix [1-2] ou autre pour retour: ')
         match choix:
             case '1':
-                p1 = input('nom joueur 1: ')
-                p2 = input('nom joueur 2: ')
-                if select_player(p1) and select_player(p2):
-                    piles = list(DEFAULT_PILES)
-                    play_jcj(p1, p2, piles)
+                j1 = input('nom joueur 1: ')
+                j2 = input('nom joueur 2: ')
+                if selectionner_joueur(j1) and selectionner_joueur(j2):
+                    piles = list(PILES_DEFAUT)
+                    jouer_jcj(j1, j2, piles)
             case '2':
-                p1 = input('nom joueur: ')
-                if select_player(p1):
+                j1 = input('nom joueur: ')
+                if selectionner_joueur(j1):
                     print('niveaux: 1-Debutant  2-Intermediaire  3-Avance  4-Expert')
                     try:
-                        level = int(input('niveau de l IA [1-4]: '))
-                        if level not in [1, 2, 3, 4]:
-                            level = 1
+                        niveau = int(input('niveau de l IA [1-4]: '))
+                        if niveau not in [1, 2, 3, 4]:
+                            niveau = 1
                     except ValueError:
-                        level = 1
-                    piles = list(DEFAULT_PILES)
-                    play_jcia(p1, level, piles)
+                        niveau = 1
+                    piles = list(PILES_DEFAUT)
+                    jouer_jcia(j1, niveau, piles)
             case _:
                 break
         input('\nappuyer sur entree...')
@@ -235,22 +235,22 @@ def menu_game():
 # MAIN
 # ============================================================
 if __name__ == '__main__':
-    create_tables()
+    creer_tables()
     while True:
         os.system('cls')
         print('*'*10, 'Jeu de Nim', '*'*10)
         print('''
           1- Nouvelle partie
           2- Gestion des joueurs
-          3- Dashboard statistiques
+          3- Tableaux de bord
           ''')
         choix = input('choix [1-3] ou autre pour quitter: ')
         match choix:
             case '1':
-                menu_game()
+                menu_partie()
             case '2':
-                menu_players()
+                menu_joueurs()
             case '3':
-                menu_dashboard()
+                menu_tableaux()
             case _:
                 break

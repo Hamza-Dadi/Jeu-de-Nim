@@ -1,1 +1,0 @@
-Ce dossier est destiné à contenir toutes les images utilisées par l'interface graphique du jeu (par exemple : icône de la fenêtre de l'application, images de fond, avatars des joueurs, etc.).

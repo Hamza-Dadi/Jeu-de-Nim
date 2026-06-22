@@ -1,177 +1,186 @@
 import pymysql
-from settings import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+from settings import BD_HOTE, BD_PORT, BD_UTILISATEUR, BD_MOT_PASSE, BD_NOM
 
-connection = pymysql.Connection(
-    host=DB_HOST,
-    port=DB_PORT,
-    user=DB_USER,
-    password=DB_PASSWORD,
-    database=DB_NAME,
+# connexion globale partagee par toutes les fonctions (style dal.py du prof)
+connexion = pymysql.Connection(
+    host=BD_HOTE,
+    port=BD_PORT,
+    user=BD_UTILISATEUR,
+    password=BD_MOT_PASSE,
+    database=BD_NOM,
 )
 
-def create_tables():
-    with connection.cursor() as cursor:
+def creer_tables():
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute('''CREATE TABLE IF NOT EXISTS t_player(
-                id       INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
-                name     VARCHAR(50),
-                wins     INT DEFAULT 0,
-                losses   INT DEFAULT 0,
-                score    INT DEFAULT 0
-            )''')
-            cursor.execute('''CREATE TABLE IF NOT EXISTS t_game(
+            curseur.execute('''CREATE TABLE IF NOT EXISTS t_joueur(
                 id         INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
-                player1    VARCHAR(50),
-                player2    VARCHAR(50),
-                winner     VARCHAR(50),
-                mode       VARCHAR(10),
-                difficulty INT,
-                duration   INT,
-                piles      VARCHAR(50),
-                date_game  DATETIME DEFAULT CURRENT_TIMESTAMP
+                nom        VARCHAR(50),
+                victoires  INT DEFAULT 0,
+                defaites   INT DEFAULT 0,
+                score      INT DEFAULT 0
             )''')
-            connection.commit()
+            curseur.execute('''CREATE TABLE IF NOT EXISTS t_partie(
+                id          INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+                joueur1     VARCHAR(50),
+                joueur2     VARCHAR(50),
+                gagnant     VARCHAR(50),
+                mode        VARCHAR(10),
+                niveau      INT,
+                duree       INT,
+                piles       VARCHAR(50),
+                date_partie DATETIME DEFAULT CURRENT_TIMESTAMP
+            )''')
+            connexion.commit()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
+            connexion.rollback()
 
-def insert_player(name):
-    with connection.cursor() as cursor:
+def ajouter_joueur(nom):
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute(
-                'INSERT INTO t_player(name) VALUES(%s)', (name,)
+            curseur.execute(
+                'INSERT INTO t_joueur(nom) VALUES(%s)', (nom,)
             )
-            connection.commit()
+            connexion.commit()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
+            connexion.rollback()
 
-def get_player(name):
-    with connection.cursor() as cursor:
+def chercher_joueur(nom):
+    resultat = None
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute(
-                'SELECT * FROM t_player WHERE name=%s', (name,)
+            curseur.execute(
+                'SELECT * FROM t_joueur WHERE nom=%s', (nom,)
             )
-            results = cursor.fetchone()
+            resultat = curseur.fetchone()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
-    return results
+            connexion.rollback()
+    return resultat
 
-def get_all_players():
-    with connection.cursor() as cursor:
+def lister_joueurs():
+    resultat = []
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute('SELECT * FROM t_player')
-            results = cursor.fetchall()
+            curseur.execute('SELECT * FROM t_joueur')
+            resultat = curseur.fetchall()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
-    return results
+            connexion.rollback()
+    return resultat
 
-def save_game(player1, player2, winner, mode, difficulty, duration, piles):
-    with connection.cursor() as cursor:
+def enregistrer_partie(joueur1, joueur2, gagnant, mode, niveau, duree, piles):
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute(
-                'INSERT INTO t_game(player1,player2,winner,mode,difficulty,duration,piles) VALUES(%s,%s,%s,%s,%s,%s,%s)',
-                (player1, player2, winner, mode, difficulty, duration, str(piles))
+            curseur.execute(
+                'INSERT INTO t_partie(joueur1,joueur2,gagnant,mode,niveau,duree,piles) VALUES(%s,%s,%s,%s,%s,%s,%s)',
+                (joueur1, joueur2, gagnant, mode, niveau, duree, str(piles))
             )
-            cursor.execute(
-                'UPDATE t_player SET wins=wins+1, score=score+10 WHERE name=%s', (winner,)
+            curseur.execute(
+                'UPDATE t_joueur SET victoires=victoires+1, score=score+10 WHERE nom=%s', (gagnant,)
             )
-            loser = player2 if winner == player1 else player1
-            cursor.execute(
-                'UPDATE t_player SET losses=losses+1 WHERE name=%s', (loser,)
+            perdant = joueur2 if gagnant == joueur1 else joueur1
+            curseur.execute(
+                'UPDATE t_joueur SET defaites=defaites+1 WHERE nom=%s', (perdant,)
             )
-            connection.commit()
+            connexion.commit()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
+            connexion.rollback()
 
-def get_stats(name):
-    with connection.cursor() as cursor:
+def get_stats(nom):
+    resultat = None
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute(
-                'SELECT wins, losses, score FROM t_player WHERE name=%s', (name,)
+            curseur.execute(
+                'SELECT victoires, defaites, score FROM t_joueur WHERE nom=%s', (nom,)
             )
-            results = cursor.fetchone()
+            resultat = curseur.fetchone()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
-    return results
+            connexion.rollback()
+    return resultat
 
-def get_ranking():
-    with connection.cursor() as cursor:
+def classement_joueurs():
+    resultat = []
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute(
-                'SELECT name, wins, score FROM t_player ORDER BY score DESC'
+            curseur.execute(
+                'SELECT nom, victoires, score FROM t_joueur ORDER BY score DESC'
             )
-            results = cursor.fetchall()
+            resultat = curseur.fetchall()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
-    return results
+            connexion.rollback()
+    return resultat
 
-def get_avg_duration():
-    with connection.cursor() as cursor:
+def duree_moyenne_parties():
+    resultat = None
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute(
-                'SELECT AVG(duration) FROM t_game'
+            curseur.execute(
+                'SELECT AVG(duree) FROM t_partie'
             )
-            results = cursor.fetchone()
+            resultat = curseur.fetchone()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
-    return results
+            connexion.rollback()
+    return resultat
 
-def get_games_by_difficulty():
-    with connection.cursor() as cursor:
+def parties_par_niveau():
+    resultat = []
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute(
-                'SELECT difficulty, COUNT(*) FROM t_game WHERE mode=%s GROUP BY difficulty',
+            curseur.execute(
+                'SELECT niveau, COUNT(*) FROM t_partie WHERE mode=%s GROUP BY niveau',
                 ('JcIA',)
             )
-            results = cursor.fetchall()
+            resultat = curseur.fetchall()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
-    return results
+            connexion.rollback()
+    return resultat
 
-def get_score_evolution(name):
-    with connection.cursor() as cursor:
+def evolution_score(nom):
+    resultat = []
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute(
-                'SELECT date_game, winner FROM t_game WHERE player1=%s OR player2=%s ORDER BY date_game',
-                (name, name)
+            curseur.execute(
+                'SELECT date_partie, gagnant FROM t_partie WHERE joueur1=%s OR joueur2=%s ORDER BY date_partie',
+                (nom, nom)
             )
-            results = cursor.fetchall()
+            resultat = curseur.fetchall()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
-    return results
+            connexion.rollback()
+    return resultat
 
-def get_full_history(name):
-    with connection.cursor() as cursor:
+def historique_complet(nom):
+    resultat = []
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute(
-                'SELECT winner, player1, player2, piles, duration, date_game FROM t_game WHERE player1=%s OR player2=%s ORDER BY date_game DESC LIMIT 10',
-                (name, name)
+            curseur.execute(
+                'SELECT gagnant, joueur1, joueur2, piles, duree, date_partie FROM t_partie WHERE joueur1=%s OR joueur2=%s ORDER BY date_partie DESC LIMIT 10',
+                (nom, nom)
             )
-            results = cursor.fetchall()
+            resultat = curseur.fetchall()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
-    return results
+            connexion.rollback()
+    return resultat
 
-def delete_player(name):
-    with connection.cursor() as cursor:
+def supprimer_joueur(nom):
+    with connexion.cursor() as curseur:
         try:
-            cursor.execute('DELETE FROM t_player WHERE name=%s', (name,))
-            connection.commit()
+            curseur.execute('DELETE FROM t_joueur WHERE nom=%s', (nom,))
+            connexion.commit()
         except pymysql.Error as e:
             print(e)
-            connection.rollback()
+            connexion.rollback()
 
 if __name__ == '__main__':
-    create_tables()
+    creer_tables()
     print('tables creees')
-    print(get_all_players())
+    print(lister_joueurs())
